@@ -11,6 +11,7 @@ import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MultiverseMessaging;
 import com.pneumaticraft.commandhandler.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.permissions.PermissionDefault;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public abstract class MultiverseCommand extends Command {
         super(plugin);
         this.plugin = plugin;
         this.messaging = this.plugin.getMessaging();
+        this.setPermission("multiverse.admin", "Admin cmd", PermissionDefault.OP);
     }
 
     @Override

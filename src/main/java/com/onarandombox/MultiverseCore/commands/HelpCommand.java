@@ -34,7 +34,7 @@ public class HelpCommand extends PaginatedCoreCommand<Command> {
         this.addKey("mvsearch");
         this.addKey("mv search");
         this.addCommandExample("/mv help ?");
-        this.setPermission("multiverse.help", "Displays a nice help menu.", PermissionDefault.TRUE);
+        this.setPermission("multiverse.help", "Displays a nice help menu.", PermissionDefault.OP);
         this.setItemsPerPage(7); // SUPPRESS CHECKSTYLE: MagicNumberCheck
     }
 

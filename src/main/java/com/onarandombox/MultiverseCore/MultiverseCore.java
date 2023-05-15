@@ -69,7 +69,6 @@ import com.onarandombox.MultiverseCore.commands.SilentCommand;
 import com.onarandombox.MultiverseCore.commands.SpawnCommand;
 import com.onarandombox.MultiverseCore.commands.TeleportCommand;
 import com.onarandombox.MultiverseCore.commands.UnloadCommand;
-import com.onarandombox.MultiverseCore.commands.VersionCommand;
 import com.onarandombox.MultiverseCore.commands.WhoCommand;
 import com.onarandombox.MultiverseCore.destination.AnchorDestination;
 import com.onarandombox.MultiverseCore.destination.BedDestination;
@@ -122,7 +121,6 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
-import org.mcstats.Metrics;
 
 /**
  * The implementation of the Multiverse-{@link Core}.
@@ -335,7 +333,6 @@ public class MultiverseCore extends JavaPlugin implements MVPlugin, Core {
         getServer().getPluginManager().registerEvents(this.chatListener, this);
 
         this.initializeBuscript();
-        this.setupMetrics();
 
         // Output a little snippet to show it's enabled.
         Logging.config("Version %s (API v%s) Enabled - By %s", this.getDescription().getVersion(), PROTOCOL, getAuthors());
@@ -351,97 +348,6 @@ public class MultiverseCore extends JavaPlugin implements MVPlugin, Core {
         buscript = new Buscript(this);
         // Add global variable "multiverse" to javascript environment
         buscript.setScriptVariable("multiverse", this);
-    }
-
-    /**
-     * Plotter for Environment-Values.
-     */
-    private static final class EnvironmentPlotter extends Metrics.Plotter {
-        private MultiverseCore core;
-        private final Environment env;
-
-        public EnvironmentPlotter(MultiverseCore core, Environment env) {
-            super(envToString(env));
-            this.core = core;
-            this.env = env;
-        }
-
-        private static String envToString(Environment env) {
-            return new StringBuilder().append(env.name().toUpperCase().charAt(0))
-                    .append(env.name().toLowerCase().substring(1)).toString();
-        }
-
-        @Override
-        public int getValue() {
-            int count = 0;
-            for (MultiverseWorld w : core.getMVWorldManager().getMVWorlds())
-                if (w.getEnvironment() == env)
-                    count++;
-            core.log(Level.FINE, String.format("Tracking %d worlds of type %s", count, env));
-            return count;
-        }
-    }
-
-    /**
-     * Plotter for Generator-Values.
-     */
-    private static final class GeneratorPlotter extends Metrics.Plotter {
-        private MultiverseCore core;
-        private final String gen;
-
-        public GeneratorPlotter(MultiverseCore core, String gen) {
-            super(gen);
-            this.core = core;
-            this.gen = gen;
-        }
-
-        @Override
-        public int getValue() {
-            int count = 0;
-            for (MultiverseWorld w : core.getMVWorldManager().getMVWorlds())
-                if (gen.equals(w.getGenerator()))
-                    count++;
-            core.log(Level.FINE, String.format("Tracking %d worlds of type %s", count, gen));
-            return count;
-        }
-    }
-
-    private void setupMetrics() {
-        try {
-            Metrics m = new Metrics(this);
-
-            Metrics.Graph envGraph = m.createGraph("worlds_by_env");
-            for (Environment env : Environment.values())
-                envGraph.addPlotter(new EnvironmentPlotter(this, env));
-
-            m.addCustomData(new Metrics.Plotter("Loaded worlds") {
-                @Override
-                public int getValue() {
-                    return getMVWorldManager().getMVWorlds().size();
-                }
-            });
-            m.addCustomData(new Metrics.Plotter("Total number of worlds") {
-                @Override
-                public int getValue() {
-                    return getMVWorldManager().getMVWorlds().size()
-                            + getMVWorldManager().getUnloadedWorlds().size();
-                }
-            });
-
-            Set<String> gens = new HashSet<String>();
-            for (MultiverseWorld w : this.getMVWorldManager().getMVWorlds())
-                gens.add(w.getGenerator());
-            gens.remove(null);
-            gens.remove("null");
-            Metrics.Graph genGraph = m.createGraph("custom_gens");
-            for (String gen : gens)
-                genGraph.addPlotter(new GeneratorPlotter(this, gen));
-
-            m.start();
-            log(Level.FINE, "Metrics have run!");
-        } catch (IOException e) {
-            log(Level.WARNING, "There was an issue while enabling metrics: " + e.getMessage());
-        }
     }
 
     private void initializeDestinationFactory() {
@@ -824,7 +730,6 @@ public class MultiverseCore extends JavaPlugin implements MVPlugin, Core {
     private void registerCommands() {
         // Intro Commands
         this.commandHandler.registerCommand(new HelpCommand(this));
-        this.commandHandler.registerCommand(new VersionCommand(this));
         this.commandHandler.registerCommand(new ListCommand(this));
         this.commandHandler.registerCommand(new InfoCommand(this));
         this.commandHandler.registerCommand(new CreateCommand(this));
